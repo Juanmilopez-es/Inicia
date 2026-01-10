@@ -1,0 +1,682 @@
+/* ========================================
+   Variables y Reset
+   ======================================== */
+:root {
+    /* Colores principales - Paleta cálida y empática */
+    --color-cream: #F5F1E8;
+    --color-warm-white: #FFFEF9;
+    --color-soft-green: #A8D5BA;
+    --color-gentle-gray: #B8B8B8;
+    --color-warm-glow: #FFE5B4;
+    --color-text-primary: #2C2C2C;
+    --color-text-secondary: #5A5A5A;
+    --color-accent: #E8A87C;
+    --color-panic: #F4A261;
+
+    /* Espaciado */
+    --spacing-xs: 8px;
+    --spacing-sm: 16px;
+    --spacing-md: 24px;
+    --spacing-lg: 32px;
+    --spacing-xl: 48px;
+
+    /* Tipografía */
+    --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    --font-size-base: 18px;
+    --font-size-lg: 24px;
+    --font-size-xl: 32px;
+    --font-size-xxl: 48px;
+
+    /* Sombras suaves */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+
+    /* Transiciones */
+    --transition-fast: 0.2s ease;
+    --transition-medium: 0.4s ease;
+    --transition-slow: 0.6s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ========================================
+   Layout Base
+   ======================================== */
+body {
+    font-family: var(--font-primary);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    color: var(--color-text-primary);
+    background: linear-gradient(135deg, var(--color-cream) 0%, var(--color-warm-white) 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+#app {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-md);
+}
+
+.container {
+    max-width: 600px;
+    width: 100%;
+    padding: var(--spacing-lg);
+    animation: fadeIn 0.6s ease;
+}
+
+/* ========================================
+   Pasos (Steps)
+   ======================================== */
+.step {
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.step.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* ========================================
+   Animaciones
+   ======================================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 229, 180, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(255, 229, 180, 1);
+    }
+}
+
+@keyframes breathe {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.3);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.8s ease;
+}
+
+/* ========================================
+   Tipografía
+   ======================================== */
+h1 {
+    font-size: var(--font-size-xxl);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+}
+
+h2 {
+    font-size: var(--font-size-xl);
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+/* ========================================
+   Paso 1: Captura sin Juicios
+   ======================================== */
+.input-container {
+    background: white;
+    padding: var(--spacing-lg);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+}
+
+.input-container label {
+    display: block;
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-sm);
+    text-align: center;
+}
+
+#taskInput {
+    width: 100%;
+    padding: var(--spacing-md);
+    font-size: var(--font-size-base);
+    font-family: var(--font-primary);
+    border: 2px solid var(--color-cream);
+    border-radius: 12px;
+    resize: vertical;
+    transition: border-color var(--transition-fast);
+    background: var(--color-warm-white);
+    color: var(--color-text-primary);
+}
+
+#taskInput:focus {
+    outline: none;
+    border-color: var(--color-soft-green);
+}
+
+#taskInput::placeholder {
+    color: var(--color-gentle-gray);
+}
+
+/* ========================================
+   Botones
+   ======================================== */
+button {
+    font-family: var(--font-primary);
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    border-radius: 12px;
+    padding: var(--spacing-md) var(--spacing-lg);
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+.primary-btn {
+    background: var(--color-soft-green);
+    color: white;
+    width: 100%;
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    font-size: var(--font-size-lg);
+}
+
+.primary-btn:hover {
+    background: #96C9A8;
+}
+
+.success-btn {
+    background: var(--color-soft-green);
+    color: white;
+    flex: 1;
+}
+
+.success-btn:hover {
+    background: #96C9A8;
+}
+
+.neutral-btn {
+    background: var(--color-gentle-gray);
+    color: white;
+    flex: 1;
+}
+
+.neutral-btn:hover {
+    background: #A0A0A0;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+button:disabled:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+}
+
+/* ========================================
+   Paso 2: El Atomizador
+   ======================================== */
+.message-box {
+    background: white;
+    padding: var(--spacing-lg);
+    border-radius: 20px;
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.empathy-message {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    text-align: center;
+    line-height: 1.8;
+}
+
+.micro-task-container {
+    background: white;
+    padding: var(--spacing-lg);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+}
+
+.micro-task-text {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-primary);
+    text-align: center;
+    padding: var(--spacing-md);
+    background: var(--color-cream);
+    border-radius: 12px;
+    margin-bottom: var(--spacing-md);
+}
+
+.button-group {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+/* ========================================
+   Paso 3: Click de Inicio (Modo Túnel)
+   ======================================== */
+.tunnel-mode {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+}
+
+.instruction {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-xl);
+}
+
+.start-button {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-soft-green), var(--color-accent));
+    color: white;
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    box-shadow: var(--shadow-lg);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-medium);
+    animation: pulse 2s infinite;
+}
+
+.start-button:hover {
+    transform: scale(1.1);
+    animation: none;
+}
+
+.start-button:active {
+    animation: glow 0.3s ease;
+}
+
+.micro-task-reminder {
+    margin-top: var(--spacing-lg);
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    max-width: 400px;
+}
+
+/* ========================================
+   Paso 4: La Inercia
+   ======================================== */
+.progress-section {
+    background: white;
+    padding: var(--spacing-lg);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.celebration {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--color-cream);
+}
+
+.celebration h2 {
+    color: var(--color-soft-green);
+    margin-bottom: var(--spacing-sm);
+}
+
+.next-action {
+    text-align: center;
+}
+
+.next-task-text {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-primary);
+    padding: var(--spacing-md);
+    background: var(--color-cream);
+    border-radius: 12px;
+    margin: var(--spacing-md) 0;
+}
+
+.time-estimate {
+    color: var(--color-text-secondary);
+    font-size: 16px;
+    margin-bottom: var(--spacing-md);
+}
+
+/* Paso 4b: En progreso */
+.current-task-display {
+    background: white;
+    padding: var(--spacing-lg);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    text-align: center;
+}
+
+.task-header {
+    margin-bottom: var(--spacing-lg);
+}
+
+.task-header h3 {
+    color: var(--color-text-secondary);
+    font-size: 20px;
+    font-weight: 400;
+}
+
+.task-header p {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-primary);
+    margin-top: var(--spacing-sm);
+}
+
+.timer-section {
+    margin: var(--spacing-lg) 0;
+}
+
+.timer {
+    font-size: 64px;
+    font-weight: 600;
+    color: var(--color-soft-green);
+    font-variant-numeric: tabular-nums;
+}
+
+.timer-label {
+    color: var(--color-text-secondary);
+    margin-top: var(--spacing-sm);
+}
+
+/* Botón de Pánico Flotante */
+.panic-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--color-panic);
+    color: white;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: 50px;
+    box-shadow: var(--shadow-lg);
+    font-size: var(--font-size-base);
+    z-index: 1000;
+    animation: pulse 2s infinite;
+}
+
+.panic-button:hover {
+    background: #E38E4C;
+    animation: none;
+}
+
+/* ========================================
+   Paso 5: Gestión del Bloqueo
+   ======================================== */
+.panic-mode {
+    background: white;
+    padding: var(--spacing-lg);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    text-align: center;
+}
+
+.panic-mode h2 {
+    color: var(--color-panic);
+    margin-bottom: var(--spacing-sm);
+}
+
+.panic-mode > p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-lg);
+}
+
+.relief-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.option-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: var(--color-cream);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-base);
+    border-radius: 12px;
+}
+
+.option-btn:hover {
+    background: var(--color-warm-glow);
+}
+
+.option-btn .emoji {
+    font-size: 28px;
+}
+
+/* Paso 5b: Ejercicio de Respiración */
+.breathing-container {
+    text-align: center;
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.breathing-circle {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-soft-green), var(--color-accent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: var(--spacing-xl) 0;
+    box-shadow: var(--shadow-lg);
+}
+
+.breathing-circle.breathe-in {
+    animation: breathe 4s ease-in-out;
+}
+
+.breathing-circle.breathe-out {
+    animation: breathe 4s ease-in-out reverse;
+}
+
+#breathingInstruction {
+    color: white;
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+}
+
+#breathingTimer {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+}
+
+/* ========================================
+   Paso 6: Cierre y Recuperación
+   ======================================== */
+.completion-message {
+    background: white;
+    padding: var(--spacing-xl);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    text-align: center;
+}
+
+.completion-message h1 {
+    color: var(--color-soft-green);
+    font-size: var(--font-size-xxl);
+    margin-bottom: var(--spacing-md);
+}
+
+.big-text {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-xl);
+}
+
+.session-stats {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-xl);
+    margin: var(--spacing-xl) 0;
+    padding: var(--spacing-lg) 0;
+    border-top: 2px solid var(--color-cream);
+    border-bottom: 2px solid var(--color-cream);
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-number {
+    font-size: 48px;
+    font-weight: 600;
+    color: var(--color-soft-green);
+}
+
+.stat-label {
+    font-size: 16px;
+    color: var(--color-text-secondary);
+    margin-top: var(--spacing-xs);
+}
+
+.recovery-section {
+    margin: var(--spacing-xl) 0;
+}
+
+.recovery-section h3 {
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.recovery-section > p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+.recovery-timer {
+    font-size: 64px;
+    font-weight: 600;
+    color: var(--color-accent);
+    margin: var(--spacing-md) 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.recovery-note {
+    font-size: 14px;
+    color: var(--color-gentle-gray);
+    font-style: italic;
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
+@media (max-width: 768px) {
+    :root {
+        --font-size-base: 16px;
+        --font-size-lg: 20px;
+        --font-size-xl: 28px;
+        --font-size-xxl: 36px;
+    }
+
+    .container {
+        padding: var(--spacing-md);
+    }
+
+    .start-button {
+        width: 160px;
+        height: 160px;
+        font-size: var(--font-size-lg);
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .session-stats {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .panic-button {
+        bottom: 20px;
+        right: 20px;
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+}
+
+/* ========================================
+   Utilidades
+   ======================================== */
+.hidden {
+    display: none !important;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt-lg {
+    margin-top: var(--spacing-lg);
+}
+
+.mb-lg {
+    margin-bottom: var(--spacing-lg);
+}

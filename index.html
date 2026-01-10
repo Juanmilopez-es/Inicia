@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicia - Vence la Parálisis</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Paso 1: Captura sin Juicios -->
+        <div id="step1" class="step active">
+            <div class="container">
+                <h1 class="fade-in">Hola <span id="userName">Alex</span> 👋</h1>
+                <div class="input-container">
+                    <label for="taskInput">¿Qué es lo que te pesa ahora mismo?</label>
+                    <textarea
+                        id="taskInput"
+                        placeholder="Escribe aquí lo que tienes que hacer..."
+                        rows="4"
+                    ></textarea>
+                    <button id="captureBtn" class="primary-btn">Continuar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 2: El Atomizador -->
+        <div id="step2" class="step">
+            <div class="container">
+                <div class="message-box">
+                    <p class="empathy-message">
+                        <span id="taskName"></span> suena enorme. Tu cerebro quiere poner el freno.
+                        <br><br>
+                        <strong>Vamos a hacerlo ridículamente fácil.</strong>
+                    </p>
+                </div>
+                <div class="micro-task-container">
+                    <h2>Paso micro:</h2>
+                    <p id="microTask" class="micro-task-text"></p>
+                    <div class="button-group">
+                        <button id="acceptMicroTask" class="success-btn">Sí, puedo hacer eso</button>
+                        <button id="rejectMicroTask" class="neutral-btn">No, sigue siendo mucho</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 3: Click de Inicio -->
+        <div id="step3" class="step">
+            <div class="container tunnel-mode">
+                <p class="instruction">Cuando hayas completado esta acción, pulsa el botón</p>
+                <button id="startBtn" class="start-button">
+                    <span>INICIAR</span>
+                </button>
+                <p class="micro-task-reminder" id="currentMicroTask"></p>
+            </div>
+        </div>
+
+        <!-- Paso 4: La Inercia -->
+        <div id="step4" class="step">
+            <div class="container">
+                <div class="progress-section">
+                    <div class="celebration">
+                        <h2>🎉 ¡Genial! Ya estás ahí.</h2>
+                        <p>Has vencido la resistencia inicial. Eso es lo más difícil.</p>
+                    </div>
+                    <div class="next-action">
+                        <p>¿Hacemos una cosa más?</p>
+                        <p id="nextMicroTask" class="next-task-text"></p>
+                        <p class="time-estimate"></p>
+                        <div class="button-group">
+                            <button id="continueBtn" class="success-btn">Sí, continuar</button>
+                            <button id="finishBtn" class="neutral-btn">Terminar por ahora</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Botón de Pánico Flotante -->
+                <button id="panicBtn" class="panic-button">
+                    Me he atascado
+                </button>
+            </div>
+        </div>
+
+        <!-- Paso 4b: En progreso -->
+        <div id="step4b" class="step">
+            <div class="container">
+                <div class="current-task-display">
+                    <div class="task-header">
+                        <h3>Tarea actual:</h3>
+                        <p id="currentTaskDisplay"></p>
+                    </div>
+                    <div class="timer-section">
+                        <div class="timer" id="sessionTimer">00:00</div>
+                        <p class="timer-label">Tiempo en sesión</p>
+                    </div>
+                    <button id="completeTaskBtn" class="success-btn">He terminado esta parte</button>
+                </div>
+                <!-- Botón de Pánico Flotante -->
+                <button id="panicBtn2" class="panic-button">
+                    Me he atascado
+                </button>
+            </div>
+        </div>
+
+        <!-- Paso 5: Gestión del Bloqueo -->
+        <div id="step5" class="step">
+            <div class="container">
+                <div class="panic-mode">
+                    <h2>Detectamos resistencia. Es normal.</h2>
+                    <p>Vamos a enfriar el circuito.</p>
+
+                    <div class="relief-options">
+                        <button id="breathingBtn" class="option-btn">
+                            <span class="emoji">🫁</span>
+                            <span>Ejercicio de respiración (30s)</span>
+                        </button>
+                        <button id="simplifyBtn" class="option-btn">
+                            <span class="emoji">✂️</span>
+                            <span>Simplificar aún más la tarea</span>
+                        </button>
+                        <button id="skipBtn" class="option-btn">
+                            <span class="emoji">⏭️</span>
+                            <span>Pasar a algo más fácil</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 5b: Ejercicio de Respiración -->
+        <div id="step5b" class="step">
+            <div class="container breathing-container">
+                <h2>Ejercicio de Respiración</h2>
+                <div class="breathing-circle" id="breathingCircle">
+                    <p id="breathingInstruction">Inhala</p>
+                </div>
+                <p id="breathingTimer">30s</p>
+            </div>
+        </div>
+
+        <!-- Paso 6: Cierre y Recuperación -->
+        <div id="step6" class="step">
+            <div class="container">
+                <div class="completion-message">
+                    <h1>🌟 Has vencido la resistencia inicial</h1>
+                    <p class="big-text">Eso es lo más difícil.</p>
+
+                    <div class="session-stats">
+                        <div class="stat">
+                            <span class="stat-number" id="tasksCompleted">0</span>
+                            <span class="stat-label">tareas completadas</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number" id="totalTime">0</span>
+                            <span class="stat-label">minutos activos</span>
+                        </div>
+                    </div>
+
+                    <div class="recovery-section">
+                        <h3>Ahora es momento de recuperar</h3>
+                        <p>Descansa 10 minutos lejos de pantallas para recuperar tus niveles de dopamina.</p>
+                        <div id="recoveryTimer" class="recovery-timer">10:00</div>
+                        <p class="recovery-note">La app se bloqueará durante este tiempo para proteger tu salud mental.</p>
+                    </div>
+
+                    <button id="newSessionBtn" class="primary-btn" disabled>
+                        <span id="newSessionText">Bloqueado - Descansa</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
