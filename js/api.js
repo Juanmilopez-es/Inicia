@@ -10,7 +10,7 @@ const API = {
 
     // IMPORTANTE: Reemplaza esta URL con tu URL de Xano
     // Se obtendrá después de configurar el backend en xano.com
-    baseURL: 'https://your-workspace-id.xano.io/api:your-api-group',
+    baseURL: 'https://x8ki-letl-twmt.n7.xano.io/api:Rws-aiYL',
 
     // Clave de API (opcional, dependiendo de tu configuración de Xano)
     apiKey: '',
@@ -25,7 +25,7 @@ const API = {
      */
     async getUserData(userId = 1) {
         try {
-            const response = await fetch(`${this.baseURL}/user/${userId}`, {
+            const response = await fetch(`${this.baseURL}/GET_/user/${userId}`, {
                 method: 'GET',
                 headers: this.getHeaders(),
             });
@@ -48,7 +48,7 @@ const API = {
      */
     async saveUser(userData) {
         try {
-            const response = await fetch(`${this.baseURL}/user`, {
+            const response = await fetch(`${this.baseURL}/POST_/user`, {
                 method: 'POST',
                 headers: this.getHeaders(),
                 body: JSON.stringify(userData),
@@ -76,7 +76,7 @@ const API = {
      */
     async saveSession(sessionData) {
         try {
-            const response = await fetch(`${this.baseURL}/session`, {
+            const response = await fetch(`${this.baseURL}/create_session`, {
                 method: 'POST',
                 headers: this.getHeaders(),
                 body: JSON.stringify(sessionData),
@@ -101,7 +101,7 @@ const API = {
      */
     async getSessions(userName) {
         try {
-            const response = await fetch(`${this.baseURL}/sessions/${userName}`, {
+            const response = await fetch(`${this.baseURL}/GET_/sessions/${userName}`, {
                 method: 'GET',
                 headers: this.getHeaders(),
             });
@@ -124,7 +124,7 @@ const API = {
      */
     async getUserStats(userName) {
         try {
-            const response = await fetch(`${this.baseURL}/stats/${userName}`, {
+            const response = await fetch(`${this.baseURL}/GET_/stats/${userName}`, {
                 method: 'GET',
                 headers: this.getHeaders(),
             });
