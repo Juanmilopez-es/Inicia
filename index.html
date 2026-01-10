@@ -8,8 +8,20 @@
 </head>
 <body>
     <div id="app">
+        <!-- Paso 0: Bienvenida y Nombre -->
+        <div id="step0" class="step active">
+            <div class="container">
+                <h1 class="fade-in">Bienvenido a Inicia</h1>
+                <div class="input-container">
+                    <p class="subtitle">¿Cómo te llamas?</p>
+                    <input id="userNameInput" type="text" placeholder="Tu nombre..." maxlength="20" />
+                    <button id="nameSubmitBtn" class="primary-btn">Empezar</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Paso 1: Captura sin Juicios -->
-        <div id="step1" class="step active">
+        <div id="step1" class="step">
             <div class="container">
                 <h1 class="fade-in">Hola <span id="userName">Alex</span> 👋</h1>
                 <div class="input-container">

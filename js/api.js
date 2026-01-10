@@ -170,6 +170,80 @@ const API = {
     },
 
     // ========================================
+    // Integración con Gemini AI
+    // ========================================
+
+    // API Key de Google Gemini
+    geminiApiKey: 'AIzaSyBZBnWYlkbfrpWV2Q2HPmLIfdfT3NG8_E0',
+
+    /**
+     * Generar micro-tarea personalizada usando Gemini AI
+     */
+    async generateMicroTask(originalTask, level, previousTasks = []) {
+        const levelDescriptions = {
+            0: 'Una acción física mínima que no requiere pensar: levantarse, buscar algo, poner algo en su sitio, abrir una app/puerta/caja.',
+            1: 'Una acción de observación rápida: mirar, revisar superficialmente, hacer una lista corta, verificar algo.',
+            2: 'Una acción de engagement moderado: preparar algo, organizar, hacer una pequeña parte del trabajo.',
+            3: 'Trabajo activo real pero breve: hacer una parte concreta de la tarea durante 5 minutos máximo.'
+        };
+
+        const prompt = `Eres un coach que ayuda a personas a empezar tareas difíciles dividiéndolas en pasos ridículamente pequeños.
+
+TAREA DEL USUARIO: "${originalTask}"
+
+Tu trabajo es generar UN SOLO micro-paso que sea:
+- 100% RELEVANTE para "${originalTask}" (NO genérico, NO sobre libros si no es una tarea de estudio)
+- Nivel ${level}: ${levelDescriptions[level]}
+- Completable en 1-3 minutos
+- Tan simple que sea imposible decir que no
+
+${previousTasks.length > 0 ? `Pasos ya completados (no repetir): ${previousTasks.join(', ')}` : ''}
+
+EJEMPLOS según el tipo de tarea:
+- Si es mudanza/transporte: "Busca las llaves del vehículo", "Abre el maletero", "Pon una caja cerca de la puerta"
+- Si es limpieza: "Coge la escoba", "Limpia solo una esquina", "Tira una cosa a la basura"
+- Si es trabajo/email: "Abre el correo", "Lee solo el asunto del primer email", "Escribe una palabra"
+- Si es ejercicio: "Ponte las zapatillas", "Sal a la puerta", "Camina 10 pasos"
+- Si es estudio: "Abre el libro", "Lee solo el título del capítulo", "Subraya una frase"
+
+RESPONDE SOLO CON EL MICRO-PASO (máximo 12 palabras, sin comillas, sin explicaciones):`;
+
+        try {
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.geminiApiKey}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: {
+                            maxOutputTokens: 60,
+                            temperature: 0.7
+                        }
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`Gemini API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (generatedText) {
+                // Limpiar el texto de posibles formatos
+                return generatedText.trim().replace(/^["']|["']$/g, '');
+            }
+
+            throw new Error('No text generated');
+        } catch (error) {
+            console.error('Error generating micro-task with Gemini:', error);
+            throw error;
+        }
+    },
+
+    // ========================================
     // Utilidades
     // ========================================
 

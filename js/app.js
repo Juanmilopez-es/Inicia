@@ -8,8 +8,8 @@
 // Estado de la Aplicación
 // ========================================
 const AppState = {
-    currentStep: 1,
-    userName: 'Alex',
+    currentStep: 0,
+    userName: '',
     originalTask: '',
     currentMicroTask: '',
     microTaskLevel: 0,
@@ -72,7 +72,22 @@ function showStep(stepNumber) {
     }
 }
 
-function getMicroTask(level, taskContext = '') {
+async function getMicroTask(level, taskContext = '') {
+    // Intentar generar con IA primero
+    try {
+        const previousTasks = AppState.taskHistory
+            .filter(t => t.type === 'micro_task_accepted' || t.type === 'task_completed')
+            .map(t => t.content);
+
+        const generated = await API.generateMicroTask(taskContext || AppState.originalTask, level, previousTasks);
+        if (generated && generated.trim()) {
+            return generated.trim();
+        }
+    } catch (error) {
+        console.warn('Gemini fallback, usando plantillas:', error);
+    }
+
+    // Fallback a plantillas estáticas
     const templates = MicroTaskTemplates[level] || MicroTaskTemplates[0];
     const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
     return randomTemplate;
@@ -105,6 +120,39 @@ async function saveSession() {
     } catch (error) {
         console.error('Error saving session:', error);
     }
+}
+
+// ========================================
+// Paso 0: Bienvenida y Nombre
+// ========================================
+function initStep0() {
+    const nameInput = document.getElementById('userNameInput');
+    const nameBtn = document.getElementById('nameSubmitBtn');
+
+    nameBtn.onclick = () => {
+        const name = nameInput.value.trim();
+        if (name) {
+            AppState.userName = name;
+            localStorage.setItem('inicia_userName', name);
+            document.getElementById('userName').textContent = name;
+            showStep(1);
+            initStep1();
+        } else {
+            nameInput.style.borderColor = '#F4A261';
+            nameInput.focus();
+        }
+    };
+
+    // Enter key support
+    nameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            nameBtn.click();
+        }
+    });
+
+    nameInput.addEventListener('input', () => {
+        nameInput.style.borderColor = '';
+    });
 }
 
 // ========================================
@@ -148,7 +196,7 @@ function initStep1() {
 // ========================================
 // Paso 2: El Atomizador
 // ========================================
-function initStep2(task) {
+async function initStep2(task) {
     const taskNameEl = document.getElementById('taskName');
     const microTaskEl = document.getElementById('microTask');
     const acceptBtn = document.getElementById('acceptMicroTask');
@@ -158,7 +206,8 @@ function initStep2(task) {
 
     // Generar micro-tarea de nivel 0 (lo más fácil)
     AppState.microTaskLevel = 0;
-    AppState.currentMicroTask = getMicroTask(0, task);
+    microTaskEl.textContent = 'Pensando...';
+    AppState.currentMicroTask = await getMicroTask(0, task);
     microTaskEl.textContent = AppState.currentMicroTask;
 
     // Botón Aceptar
@@ -175,13 +224,14 @@ function initStep2(task) {
     };
 
     // Botón Rechazar (atomizar aún más)
-    rejectBtn.onclick = () => {
+    rejectBtn.onclick = async () => {
         // Si ya estamos en nivel 0, generamos otra tarea del mismo nivel
         if (AppState.microTaskLevel > 0) {
             AppState.microTaskLevel--;
         }
 
-        AppState.currentMicroTask = getMicroTask(AppState.microTaskLevel, task);
+        microTaskEl.textContent = 'Pensando algo más fácil...';
+        AppState.currentMicroTask = await getMicroTask(AppState.microTaskLevel, task);
         microTaskEl.textContent = AppState.currentMicroTask;
 
         AppState.taskHistory.push({
@@ -229,7 +279,7 @@ function initStep3() {
 // ========================================
 // Paso 4: La Inercia
 // ========================================
-function initStep4() {
+async function initStep4() {
     const nextMicroTaskEl = document.getElementById('nextMicroTask');
     const continueBtn = document.getElementById('continueBtn');
     const finishBtn = document.getElementById('finishBtn');
@@ -237,7 +287,8 @@ function initStep4() {
 
     // Subir un nivel de dificultad
     AppState.microTaskLevel = Math.min(AppState.microTaskLevel + 1, 3);
-    const nextTask = getMicroTask(AppState.microTaskLevel, AppState.originalTask);
+    nextMicroTaskEl.textContent = 'Pensando siguiente paso...';
+    const nextTask = await getMicroTask(AppState.microTaskLevel, AppState.originalTask);
     nextMicroTaskEl.textContent = nextTask;
 
     // Botón Continuar
@@ -337,9 +388,9 @@ function initStep5() {
     };
 
     // Simplificar tarea
-    simplifyBtn.onclick = () => {
+    simplifyBtn.onclick = async () => {
         AppState.microTaskLevel = Math.max(AppState.microTaskLevel - 1, 0);
-        AppState.currentMicroTask = getMicroTask(AppState.microTaskLevel, AppState.originalTask);
+        AppState.currentMicroTask = await getMicroTask(AppState.microTaskLevel, AppState.originalTask);
 
         AppState.taskHistory.push({
             type: 'task_simplified',
@@ -352,9 +403,9 @@ function initStep5() {
     };
 
     // Saltar a algo más fácil
-    skipBtn.onclick = () => {
+    skipBtn.onclick = async () => {
         AppState.microTaskLevel = 0;
-        AppState.currentMicroTask = getMicroTask(0, AppState.originalTask);
+        AppState.currentMicroTask = await getMicroTask(0, AppState.originalTask);
 
         AppState.taskHistory.push({
             type: 'task_skipped',
@@ -485,15 +536,18 @@ function resetApp() {
 // Inicialización
 // ========================================
 document.addEventListener('DOMContentLoaded', () => {
-    initStep1();
+    // Verificar si hay nombre guardado en localStorage
+    const savedName = localStorage.getItem('inicia_userName');
 
-    // Cargar datos del usuario si existen
-    API.getUserData().then(userData => {
-        if (userData && userData.name) {
-            AppState.userName = userData.name;
-            document.getElementById('userName').textContent = userData.name;
-        }
-    }).catch(err => {
-        console.log('Using default user name');
-    });
+    if (savedName) {
+        // Usuario ya tiene nombre, ir directo al Step 1
+        AppState.userName = savedName;
+        document.getElementById('userName').textContent = savedName;
+        showStep(1);
+        initStep1();
+    } else {
+        // Primera vez, mostrar Step 0 para pedir nombre
+        showStep(0);
+        initStep0();
+    }
 });
