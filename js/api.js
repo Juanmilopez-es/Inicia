@@ -174,7 +174,7 @@ const API = {
     // ========================================
 
     // API Key de Google Gemini
-    geminiApiKey: 'AIzaSyBZBnWYlkbfrpWV2Q2HPmLIfdfT3NG8_E0',
+    geminiApiKey: 'AIzaSyDck7QArLJAArPD9XZYXC3m-unuf3uEYz8',
 
     /**
      * Generar micro-tarea personalizada usando Gemini AI
