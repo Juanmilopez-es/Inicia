@@ -22,38 +22,74 @@ const AppState = {
 };
 
 // ========================================
-// Micro-tareas por Nivel (atomización progresiva)
+// Micro-tareas por Categoría y Nivel
 // ========================================
-const MicroTaskTemplates = {
-    // Nivel 0 - Más fácil
-    0: [
-        'Pon los materiales sobre la mesa. No tienes que abrirlos.',
-        'Levántate y ve hasta donde están tus materiales.',
-        'Abre la aplicación o el documento relacionado. Solo ábrelo.',
-        'Siéntate en tu lugar de estudio. Eso es todo.'
-    ],
-    // Nivel 1 - Fácil
-    1: [
-        'Lee solo los títulos o encabezados.',
-        'Revisa la primera página sin leer en detalle.',
-        'Haz una lista de 3 cosas que ya sabes del tema.',
-        'Escribe solo el título de lo que vas a hacer.'
-    ],
-    // Nivel 2 - Moderado
-    2: [
-        'Lee el primer párrafo o sección.',
-        'Resume en una frase lo que entiendes hasta ahora.',
-        'Subraya o marca 3 conceptos clave.',
-        'Escribe 2 preguntas sobre el tema.'
-    ],
-    // Nivel 3 - Normal
-    3: [
-        'Trabaja en esta sección durante 5 minutos.',
-        'Completa la siguiente sub-tarea.',
-        'Haz un esquema rápido de esta parte.',
-        'Resuelve el siguiente problema o ejercicio.'
-    ]
+const CategoryTemplates = {
+    limpieza: {
+        0: ['Coge una cosa del suelo', 'Tira un papel a la basura', 'Pon un objeto en su sitio', 'Abre el armario'],
+        1: ['Recoge 3 cosas del suelo', 'Vacía una papelera', 'Ordena una superficie pequeña', 'Dobla una prenda'],
+        2: ['Limpia una esquina', 'Organiza un cajón', 'Haz la cama', 'Recoge toda la ropa sucia'],
+        3: ['Limpia durante 5 minutos', 'Ordena una zona completa', 'Aspira una habitación', 'Friega una superficie']
+    },
+    transporte: {
+        0: ['Busca las llaves', 'Ponte los zapatos', 'Coge una bolsa vacía', 'Mira qué hay que mover'],
+        1: ['Acerca una caja a la puerta', 'Abre el maletero', 'Haz una lista de lo que llevar', 'Despeja el camino'],
+        2: ['Lleva una cosa al coche', 'Empaqueta algo pequeño', 'Organiza lo que vas a mover', 'Carga una bolsa'],
+        3: ['Haz un viaje al coche', 'Mueve varias cosas', 'Carga durante 5 minutos', 'Organiza el maletero']
+    },
+    ejercicio: {
+        0: ['Ponte las zapatillas', 'Llena la botella de agua', 'Busca la ropa de deporte', 'Levántate del sofá'],
+        1: ['Sal a la puerta de casa', 'Estira los brazos', 'Da 10 pasos', 'Ponte la ropa de deporte'],
+        2: ['Camina hasta la esquina', 'Haz 5 sentadillas', 'Estira durante 2 minutos', 'Sube unas escaleras'],
+        3: ['Camina 5 minutos', 'Haz una serie de ejercicios', 'Corre hasta el final de la calle', 'Entrena 5 minutos']
+    },
+    trabajo: {
+        0: ['Enciende el ordenador', 'Abre el navegador', 'Siéntate en la silla', 'Coge un bolígrafo'],
+        1: ['Abre el programa que necesitas', 'Lee el asunto del primer email', 'Mira tu lista de tareas', 'Abre el documento'],
+        2: ['Responde un email corto', 'Escribe el primer párrafo', 'Revisa lo pendiente', 'Haz una llamada rápida'],
+        3: ['Trabaja 5 minutos seguidos', 'Completa una tarea pequeña', 'Escribe media página', 'Termina un email largo']
+    },
+    estudio: {
+        0: ['Saca el libro o apuntes', 'Siéntate en tu lugar de estudio', 'Abre el documento', 'Busca un bolígrafo'],
+        1: ['Lee el título del tema', 'Mira el índice', 'Lee los títulos de sección', 'Revisa tus notas anteriores'],
+        2: ['Lee el primer párrafo', 'Subraya una frase importante', 'Escribe una pregunta', 'Resume una idea'],
+        3: ['Estudia 5 minutos', 'Lee una página completa', 'Haz un esquema', 'Resuelve un ejercicio']
+    },
+    cocina: {
+        0: ['Ve a la cocina', 'Abre la nevera', 'Saca una olla', 'Mira qué ingredientes tienes'],
+        1: ['Saca los ingredientes', 'Pon agua a hervir', 'Precalienta el horno', 'Lava una verdura'],
+        2: ['Corta un ingrediente', 'Mezcla dos cosas', 'Pon algo al fuego', 'Prepara la mesa'],
+        3: ['Cocina durante 5 minutos', 'Prepara un plato sencillo', 'Termina de cocinar algo', 'Sirve la comida']
+    },
+    comunicacion: {
+        0: ['Coge el teléfono', 'Busca el contacto', 'Abre WhatsApp', 'Mira si tienes mensajes'],
+        1: ['Escribe "hola"', 'Lee el último mensaje', 'Busca el número', 'Abre la app de llamadas'],
+        2: ['Envía un mensaje corto', 'Haz una llamada de 1 minuto', 'Responde un mensaje', 'Agenda la cita'],
+        3: ['Mantén una conversación', 'Haz la llamada completa', 'Resuelve el tema', 'Confirma los detalles']
+    },
+    general: {
+        0: ['Levántate', 'Ve al lugar donde lo harás', 'Busca lo que necesitas', 'Prepara el espacio'],
+        1: ['Coge lo primero que necesites', 'Mira qué hay que hacer', 'Organiza tus cosas', 'Empieza por algo pequeño'],
+        2: ['Haz la parte más fácil', 'Dedica 2 minutos', 'Completa un paso', 'Avanza un poco'],
+        3: ['Trabaja 5 minutos', 'Haz una parte completa', 'Avanza significativamente', 'Termina algo concreto']
+    }
 };
+
+// Función para detectar categoría de la tarea
+function detectTaskCategory(task) {
+    const t = task.toLowerCase();
+    if (t.match(/ordenar|limpiar|habitaci|cuarto|casa|ropa|armario|basura|fregar|barrer|aspirar/)) return 'limpieza';
+    if (t.match(/transport|mudan|llevar|mover|carga|kg|km|coche|furgoneta|caja|maleta/)) return 'transporte';
+    if (t.match(/ejercicio|correr|gym|deporte|entren|caminar|bici|nadar|yoga/)) return 'ejercicio';
+    if (t.match(/email|correo|trabajo|informe|proyecto|oficina|ordenador|documento|reunión/)) return 'trabajo';
+    if (t.match(/estudiar|libro|examen|apuntes|leer|universidad|deberes|clase|tema/)) return 'estudio';
+    if (t.match(/cocinar|comida|cena|cocina|receta|ingrediente|desayuno|almuerzo/)) return 'cocina';
+    if (t.match(/llamar|teléfono|contactar|cita|mensaje|whatsapp|hablar con/)) return 'comunicacion';
+    return 'general';
+}
+
+// Plantillas legacy para compatibilidad
+const MicroTaskTemplates = CategoryTemplates.general;
 
 // ========================================
 // Utilidades
@@ -72,25 +108,27 @@ function showStep(stepNumber) {
     }
 }
 
-async function getMicroTask(level, taskContext = '') {
-    // Intentar generar con IA primero
-    try {
-        const previousTasks = AppState.taskHistory
-            .filter(t => t.type === 'micro_task_accepted' || t.type === 'task_completed')
-            .map(t => t.content);
+function getMicroTask(level, taskContext = '') {
+    // Detectar categoría de la tarea
+    const task = taskContext || AppState.originalTask;
+    const category = detectTaskCategory(task);
 
-        const generated = await API.generateMicroTask(taskContext || AppState.originalTask, level, previousTasks);
-        if (generated && generated.trim()) {
-            return generated.trim();
-        }
-    } catch (error) {
-        console.warn('Gemini fallback, usando plantillas:', error);
-    }
+    // Obtener plantillas para esta categoría y nivel
+    const categoryTasks = CategoryTemplates[category] || CategoryTemplates.general;
+    const levelTasks = categoryTasks[level] || categoryTasks[0];
 
-    // Fallback a plantillas estáticas
-    const templates = MicroTaskTemplates[level] || MicroTaskTemplates[0];
-    const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
-    return randomTemplate;
+    // Filtrar tareas ya completadas para no repetir
+    const completedTasks = AppState.taskHistory
+        .filter(t => t.type === 'micro_task_accepted' || t.type === 'task_completed')
+        .map(t => t.content);
+
+    const availableTasks = levelTasks.filter(t => !completedTasks.includes(t));
+
+    // Si todas las tareas de este nivel ya se hicieron, usar cualquiera
+    const tasksToChoose = availableTasks.length > 0 ? availableTasks : levelTasks;
+
+    // Seleccionar una al azar
+    return tasksToChoose[Math.floor(Math.random() * tasksToChoose.length)];
 }
 
 function formatTime(seconds) {
@@ -207,7 +245,7 @@ async function initStep2(task) {
     // Generar micro-tarea de nivel 0 (lo más fácil)
     AppState.microTaskLevel = 0;
     microTaskEl.textContent = 'Pensando...';
-    AppState.currentMicroTask = await getMicroTask(0, task);
+    AppState.currentMicroTask = getMicroTask(0, task);
     microTaskEl.textContent = AppState.currentMicroTask;
 
     // Botón Aceptar
@@ -231,7 +269,7 @@ async function initStep2(task) {
         }
 
         microTaskEl.textContent = 'Pensando algo más fácil...';
-        AppState.currentMicroTask = await getMicroTask(AppState.microTaskLevel, task);
+        AppState.currentMicroTask = getMicroTask(AppState.microTaskLevel, task);
         microTaskEl.textContent = AppState.currentMicroTask;
 
         AppState.taskHistory.push({
@@ -288,7 +326,7 @@ async function initStep4() {
     // Subir un nivel de dificultad
     AppState.microTaskLevel = Math.min(AppState.microTaskLevel + 1, 3);
     nextMicroTaskEl.textContent = 'Pensando siguiente paso...';
-    const nextTask = await getMicroTask(AppState.microTaskLevel, AppState.originalTask);
+    const nextTask = getMicroTask(AppState.microTaskLevel, AppState.originalTask);
     nextMicroTaskEl.textContent = nextTask;
 
     // Botón Continuar
@@ -390,7 +428,7 @@ function initStep5() {
     // Simplificar tarea
     simplifyBtn.onclick = async () => {
         AppState.microTaskLevel = Math.max(AppState.microTaskLevel - 1, 0);
-        AppState.currentMicroTask = await getMicroTask(AppState.microTaskLevel, AppState.originalTask);
+        AppState.currentMicroTask = getMicroTask(AppState.microTaskLevel, AppState.originalTask);
 
         AppState.taskHistory.push({
             type: 'task_simplified',
@@ -405,7 +443,7 @@ function initStep5() {
     // Saltar a algo más fácil
     skipBtn.onclick = async () => {
         AppState.microTaskLevel = 0;
-        AppState.currentMicroTask = await getMicroTask(0, AppState.originalTask);
+        AppState.currentMicroTask = getMicroTask(0, AppState.originalTask);
 
         AppState.taskHistory.push({
             type: 'task_skipped',
