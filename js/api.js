@@ -142,34 +142,6 @@ const API = {
     },
 
     // ========================================
-    // Métodos de Tarea
-    // ========================================
-
-    /**
-     * Registrar evento de tarea
-     * Endpoint: POST /task-event
-     */
-    async logTaskEvent(eventData) {
-        try {
-            const response = await fetch(`${this.baseURL}/task-event`, {
-                method: 'POST',
-                headers: this.getHeaders(),
-                body: JSON.stringify(eventData),
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error('Error logging task event:', error);
-            throw error;
-        }
-    },
-
-    // ========================================
     // Integración con Gemini AI
     // ========================================
 
