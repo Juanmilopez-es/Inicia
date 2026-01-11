@@ -152,29 +152,47 @@ async function saveSession() {
         completed_at: new Date().toISOString()
     };
 
+    console.log('=== SAVING SESSION ===');
+    console.log('Session data:', sessionData);
+    console.log('Task history length:', AppState.taskHistory.length);
+    console.log('Task history:', AppState.taskHistory);
+
     try {
         // 1. Guardar sesión y obtener ID
         const savedSession = await API.saveSession(sessionData);
-        const sessionId = savedSession?.id;
-        console.log('Session saved:', savedSession);
+        console.log('Full API response:', JSON.stringify(savedSession, null, 2));
+
+        // Intentar extraer el ID de diferentes formatos de respuesta
+        const sessionId = savedSession?.id || savedSession?.session_id || savedSession?.data?.id;
+        console.log('Extracted session ID:', sessionId);
 
         // 2. Guardar cada evento en task_history
         if (sessionId && AppState.taskHistory.length > 0) {
-            for (const event of AppState.taskHistory) {
+            console.log(`Saving ${AppState.taskHistory.length} events...`);
+
+            for (let i = 0; i < AppState.taskHistory.length; i++) {
+                const event = AppState.taskHistory[i];
+                const eventData = {
+                    session_id: sessionId,
+                    user_id: AppState.userName,
+                    event_type: event.type,
+                    content: event.content || '',
+                    level: event.level ?? null,
+                    created_at: event.timestamp
+                };
+
+                console.log(`Saving event ${i + 1}:`, eventData);
+
                 try {
-                    await API.createTaskEvent({
-                        session_id: sessionId,
-                        user_id: AppState.userName,
-                        event_type: event.type,
-                        content: event.content || '',
-                        level: event.level ?? null,
-                        created_at: event.timestamp
-                    });
+                    const result = await API.createTaskEvent(eventData);
+                    console.log(`Event ${i + 1} saved:`, result);
                 } catch (e) {
-                    console.warn('Error saving event:', e);
+                    console.error(`Error saving event ${i + 1}:`, e.message);
                 }
             }
-            console.log(`Saved ${AppState.taskHistory.length} events to task_history`);
+            console.log('All events processed');
+        } else {
+            console.warn('No session ID or no events to save. sessionId:', sessionId, 'events:', AppState.taskHistory.length);
         }
     } catch (error) {
         console.error('Error saving session:', error);

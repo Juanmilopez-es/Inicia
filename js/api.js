@@ -72,23 +72,28 @@ const API = {
 
     /**
      * Guardar sesión completa
-     * Endpoint: POST /session
+     * Endpoint: POST /create_session
      */
     async saveSession(sessionData) {
+        const url = `${this.baseURL}/create_session`;
+        console.log('Calling saveSession:', url, sessionData);
+
         try {
-            const response = await fetch(`${this.baseURL}/create_session`, {
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: this.getHeaders(),
                 body: JSON.stringify(sessionData),
             });
 
+            const responseText = await response.text();
+            console.log('saveSession response status:', response.status);
+            console.log('saveSession response body:', responseText);
+
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`HTTP ${response.status}: ${responseText}`);
             }
 
-            const data = await response.json();
-            console.log('Session saved:', data);
-            return data;
+            return JSON.parse(responseText);
         } catch (error) {
             console.error('Error saving session:', error);
             throw error;
@@ -150,18 +155,25 @@ const API = {
      * Endpoint: POST /create_task_event
      */
     async createTaskEvent(eventData) {
+        const url = `${this.baseURL}/create_task_event`;
+        console.log('Calling createTaskEvent:', url, eventData);
+
         try {
-            const response = await fetch(`${this.baseURL}/create_task_event`, {
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: this.getHeaders(),
                 body: JSON.stringify(eventData),
             });
 
+            const responseText = await response.text();
+            console.log('createTaskEvent response status:', response.status);
+            console.log('createTaskEvent response body:', responseText);
+
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`HTTP ${response.status}: ${responseText}`);
             }
 
-            return await response.json();
+            return JSON.parse(responseText);
         } catch (error) {
             console.error('Error creating task event:', error);
             throw error;
