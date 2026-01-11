@@ -180,33 +180,55 @@ const API = {
      * Generar micro-tarea personalizada usando Gemini AI
      */
     async generateMicroTask(originalTask, level, previousTasks = []) {
-        const levelDescriptions = {
-            0: 'Acción física mínima de 30 segundos: moverse, coger algo, abrir algo.',
-            1: 'Observación rápida de 1 minuto: mirar, revisar, localizar.',
-            2: 'Preparación ligera de 2 minutos: organizar, preparar herramientas.',
-            3: 'Acción real breve de 3-5 minutos: hacer una pequeña parte.'
-        };
+        // Detectar categoría de la tarea para dar ejemplos específicos
+        const taskLower = originalTask.toLowerCase();
+        let category = 'general';
+        let goodExamples = '';
+        let badExamples = '';
 
-        const prompt = `INSTRUCCIÓN CRÍTICA: Genera un micro-paso para ayudar a alguien a empezar esta tarea.
+        if (taskLower.match(/ordenar|limpiar|habitaci|cuarto|casa|ropa|armario|basura/)) {
+            category = 'limpieza';
+            goodExamples = 'Coge una prenda del suelo | Tira un papel a la basura | Pon un objeto en su sitio | Haz la cama | Abre el armario';
+            badExamples = 'abrir libro, abrir página, leer capítulo, abrir aplicación';
+        } else if (taskLower.match(/transport|mudan|llevar|mover|carga|kg|km|coche|furgoneta|caja/)) {
+            category = 'transporte';
+            goodExamples = 'Busca las llaves del coche | Abre el maletero | Acerca una caja a la puerta | Mira cuántas cajas hay | Coge una bolsa';
+            badExamples = 'abrir libro, abrir página, leer, estudiar, aplicación';
+        } else if (taskLower.match(/ejercicio|correr|gym|deporte|entren|caminar|bici/)) {
+            category = 'ejercicio';
+            goodExamples = 'Ponte las zapatillas | Llena la botella de agua | Sal a la puerta | Estira los brazos | Da 10 pasos';
+            badExamples = 'abrir libro, abrir página, leer, estudiar';
+        } else if (taskLower.match(/email|correo|trabajo|informe|proyecto|oficina|ordenador|documento/)) {
+            category = 'trabajo';
+            goodExamples = 'Enciende el ordenador | Abre el navegador | Lee el asunto del primer email | Escribe una palabra | Abre el documento';
+            badExamples = 'abrir libro de texto, leer capítulo, estudiar';
+        } else if (taskLower.match(/estudiar|libro|examen|apuntes|leer|universidad|deberes|tarea escolar/)) {
+            category = 'estudio';
+            goodExamples = 'Abre el libro | Lee solo el título | Saca los apuntes | Subraya una frase | Lee una línea';
+            badExamples = '';
+        } else if (taskLower.match(/cocinar|comida|cena|cocina|receta|ingrediente/)) {
+            category = 'cocina';
+            goodExamples = 'Saca una olla | Abre la nevera | Pon agua a hervir | Saca un ingrediente | Enciende el fuego';
+            badExamples = 'abrir libro, abrir página, leer, estudiar';
+        } else if (taskLower.match(/llamar|tel[eé]fono|contactar|cita|mensaje|whatsapp/)) {
+            category = 'comunicación';
+            goodExamples = 'Coge el teléfono | Busca el contacto | Abre WhatsApp | Escribe "hola" | Mira la hora';
+            badExamples = 'abrir libro, abrir página, leer capítulo';
+        } else {
+            goodExamples = 'Levántate | Busca lo que necesitas | Prepara el espacio | Ve al lugar | Coge lo primero';
+            badExamples = 'abrir libro, abrir página, leer capítulo, abrir aplicación';
+        }
 
-TAREA: "${originalTask}"
+        const prompt = `TAREA: "${originalTask}"
+CATEGORÍA DETECTADA: ${category}
 
-PASO 1 - ANALIZA LA TAREA:
-- ¿Es sobre MOVER/TRANSPORTAR algo? → sugiere: buscar llaves, abrir maletero, acercar una caja
-- ¿Es sobre LIMPIAR/ORDENAR? → sugiere: coger un trapo, tirar una cosa, mover un objeto
-- ¿Es sobre EJERCICIO/DEPORTE? → sugiere: ponerse zapatillas, salir a la puerta, dar 10 pasos
-- ¿Es sobre TRABAJO/ORDENADOR? → sugiere: abrir el programa, escribir una palabra
-- ¿Es sobre COCINAR? → sugiere: sacar un ingrediente, encender el fuego
-- ¿Es sobre LLAMAR/CONTACTAR? → sugiere: buscar el número, abrir la app de teléfono
-- ¿Es sobre ESTUDIAR/LEER? → SOLO entonces sugiere algo con libros o apuntes
+BUENOS EJEMPLOS de micro-pasos para ${category}: ${goodExamples}
+${badExamples ? `PROHIBIDO decir: ${badExamples}` : ''}
 
-REGLA ABSOLUTA: Si la tarea NO menciona libros, estudiar, leer o aprender, NUNCA sugieras nada relacionado con libros, páginas, capítulos o apuntes.
+${previousTasks.length > 0 ? `Ya completados (NO repetir): ${previousTasks.join(', ')}` : ''}
 
-NIVEL DE DIFICULTAD ${level}: ${levelDescriptions[level]}
-
-${previousTasks.length > 0 ? `NO REPETIR estos pasos ya hechos: ${previousTasks.join(', ')}` : ''}
-
-RESPONDE ÚNICAMENTE CON EL MICRO-PASO (máximo 10 palabras, imperativo, sin explicaciones):`;
+Genera UN micro-paso de máximo 6 palabras, relacionado con "${originalTask}".
+Solo el micro-paso, nada más:`;
 
         try {
             const response = await fetch(
@@ -217,8 +239,8 @@ RESPONDE ÚNICAMENTE CON EL MICRO-PASO (máximo 10 palabras, imperativo, sin exp
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
                         generationConfig: {
-                            maxOutputTokens: 50,
-                            temperature: 0.3
+                            maxOutputTokens: 30,
+                            temperature: 0.1
                         }
                     })
                 }
