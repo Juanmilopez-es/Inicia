@@ -145,18 +145,21 @@ function vibrateSuccess() {
 
 async function saveSession() {
     const sessionData = {
-        user_name: AppState.userName,
+        user_id: AppState.userName,
         original_task: AppState.originalTask,
         tasks_completed: AppState.tasksCompleted,
         session_duration_seconds: AppState.sessionElapsedSeconds,
-        task_history: AppState.taskHistory,
+        task_history: JSON.stringify(AppState.taskHistory),
         completed_at: new Date().toISOString()
     };
 
     try {
         await API.saveSession(sessionData);
+        console.log('Session saved successfully:', sessionData);
     } catch (error) {
         console.error('Error saving session:', error);
+        // Guardar offline si falla
+        API.saveOffline('sessions', sessionData);
     }
 }
 

@@ -8,6 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Core Philosophy**: The goal is NOT to make users work for hours, but to help them START by making the first action ridiculously easy. Success is measured by initiating action, not completion.
 
+**Production URL**: https://amigoia.com (deployed via GitHub Pages)
+
 ## Running the Application
 
 ```bash
@@ -15,14 +17,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 open index.html
 
 # Option 2: Local server with Python
-python -m http.server 8000
+python3 -m http.server 8000
 # Then open: http://localhost:8000
 
 # Option 3: Local server with Node.js
 npx serve
 ```
 
-No build process, linting, or test runner is currently configured. This is intentional to keep the app simple and dependency-free.
+No build process, linting, or test runner is configured. This is intentional to keep the app simple and dependency-free.
 
 ## Architecture
 
@@ -30,6 +32,7 @@ No build process, linting, or test runner is currently configured. This is inten
 
 The app is a **single-page application** using a step-based state machine. All steps exist in the DOM simultaneously but are shown/hidden via CSS classes:
 
+- **Step 0**: Welcome - User enters their name (stored in localStorage)
 - **Step 1**: Capture - User inputs their overwhelming task
 - **Step 2**: Atomizer - App suggests ridiculously easy micro-task
 - **Step 3**: Start - Big circular button to confirm action started
@@ -45,65 +48,51 @@ The entire app state lives in a single `AppState` object in `js/app.js`:
 
 ```javascript
 const AppState = {
-    currentStep: 1,
-    userName: 'Alex',
+    currentStep: 0,
+    userName: '',              // Captured in Step 0
     originalTask: '',
     currentMicroTask: '',
-    microTaskLevel: 0,        // 0 (easiest) to 3 (normal)
+    microTaskLevel: 0,         // 0 (easiest) to 3 (normal)
     tasksCompleted: 0,
     sessionStartTime: null,
     sessionElapsedSeconds: 0,
-    timerInterval: null,      // setInterval handle
-    recoveryInterval: null,   // setInterval handle
-    taskHistory: [],          // Array of event objects
+    timerInterval: null,
+    recoveryInterval: null,
+    taskHistory: [],
 };
 ```
 
-**Important**: There is no framework state management. All state mutations happen directly on this object. When adding features, maintain this pattern for consistency.
+**Important**: There is no framework state management. All state mutations happen directly on this object.
 
-### Micro-Task Difficulty System
+### Category-Based Micro-Task System
 
-Micro-tasks are organized into 4 difficulty levels (0-3) in `MicroTaskTemplates`:
+Micro-tasks are organized by **task category** and **difficulty level** in `CategoryTemplates`:
 
-- **Level 0** (Easiest): Physical actions only - "Put materials on desk"
-- **Level 1** (Easy): Passive observation - "Read just the titles"
-- **Level 2** (Moderate): Light engagement - "Read first paragraph"
-- **Level 3** (Normal): Active work - "Work for 5 minutes"
+**Categories** (detected automatically via `detectTaskCategory()`):
+- `limpieza` - cleaning/organizing (ordenar, limpiar, habitación)
+- `transporte` - moving/transport (llevar, mover, kg, km, coche)
+- `ejercicio` - exercise (correr, gym, deporte)
+- `trabajo` - work (email, informe, proyecto)
+- `estudio` - study (libro, examen, apuntes)
+- `cocina` - cooking (cocinar, comida, receta)
+- `comunicacion` - communication (llamar, mensaje, whatsapp)
+- `general` - fallback for unrecognized tasks
 
-**Key Pattern**: When user rejects a micro-task, level DECREASES. When they accept and continue, level INCREASES. The panic button lets them reset to level 0.
+**Difficulty Levels** (0-3):
+- **Level 0** (Easiest): Physical actions only - "Coge una cosa del suelo"
+- **Level 1** (Easy): Quick observation - "Recoge 3 cosas del suelo"
+- **Level 2** (Moderate): Light engagement - "Limpia una esquina"
+- **Level 3** (Normal): Active work - "Limpia durante 5 minutos"
 
-### Task History Tracking
-
-Every user interaction is logged to `AppState.taskHistory` with this structure:
-
-```javascript
-{
-    type: 'original_task' | 'micro_task_accepted' | 'task_started' |
-          'continued' | 'task_completed' | 'panic_activated' |
-          'breathing_completed' | 'task_simplified' | 'task_skipped',
-    content: 'task description',
-    level: 0-3,  // micro-task difficulty
-    timestamp: '2024-01-15T14:30:00Z'
-}
-```
-
-This history is sent to Xano backend when session completes and used for analytics.
+**Key Pattern**: When user rejects a micro-task, level DECREASES. When they accept and continue, level INCREASES. The panic button offers level reset.
 
 ### Backend Integration (Optional)
 
 The app works **offline-first**. Backend is optional for persistence:
 
-1. **API Module**: `js/api.js` contains all backend calls
-2. **Configuration**: Update `baseURL` at line 13 with your Xano workspace URL
-3. **Offline Fallback**: Failed API calls save to `localStorage` under key `inicia_offline`
-4. **Auto-Sync**: On page load, `syncOfflineData()` attempts to sync stored data
-
-**Database Schema** (if using Xano):
-- `users` table: Basic user info
-- `sessions` table: Completed work sessions
-- `task_history` table: Event log (foreign key to sessions)
-
-Full Xano setup instructions are in `XANO_SETUP.md`.
+- **API Module**: `js/api.js` contains Xano backend calls
+- **Xano Base URL**: `https://x8ki-letl-twmt.n7.xano.io/api:Rws-aiYL`
+- **Offline Fallback**: Failed API calls save to `localStorage` under key `inicia_offline`
 
 ## Key Code Patterns
 
@@ -116,26 +105,24 @@ showStep(2);        // Move to step 2
 initStep2(task);    // Initialize step 2's event handlers
 ```
 
-**Critical**: Each step has its own `initStepX()` function that sets up event listeners. These functions can be called multiple times, so avoid `addEventListener()` without cleanup. Use direct assignment (`onclick =`) instead.
+**Critical**: Each step has its own `initStepX()` function that sets up event listeners. Use direct assignment (`onclick =`) instead of `addEventListener()` to avoid duplicate handlers.
 
 ### Timer Management
 
 Two timers run in the app:
 
-1. **Session Timer** (`timerInterval`): Counts up during work
-2. **Recovery Timer** (`recoveryInterval`): Counts down during forced break
+1. **Session Timer** (`timerInterval`): Counts up during work (step 4b)
+2. **Recovery Timer** (`recoveryInterval`): Counts down during forced break (step 6)
 
-**Important**: Always call `stopTimer()` before transitioning away from step 4b, or timers will leak.
+**Important**: `startTimer()` automatically calls `stopTimer()` first to prevent timer leaks. Timer is also stopped when entering panic mode (step 5).
 
 ### Haptic Feedback
-
-The app uses vibration for positive reinforcement:
 
 ```javascript
 vibrateSuccess();  // Vibrates: [100ms, pause 50ms, 100ms]
 ```
 
-Called when user clicks INICIAR button and completes micro-tasks. This is a key part of the dopamine reward system.
+Called when user clicks INICIAR button and completes micro-tasks.
 
 ## Design Principles (DO NOT VIOLATE)
 
@@ -144,68 +131,36 @@ These are grounded in the neuroscience purpose of the app:
 1. **No Visible Task Lists**: Never show pending tasks. This triggers Ventral Striatum anxiety.
 2. **Reward Starting, Not Finishing**: Dopamine release happens when user clicks INICIAR, not when task completes.
 3. **Never Add Pressure**: Don't add countdown timers, streaks, or guilt-inducing features.
-4. **Empathetic Language**: All copy should be supportive, never demanding (e.g., "¿Qué te pesa?" not "¿Qué debes hacer?").
-5. **Forced Recovery**: The 10-minute post-session lockout is mandatory to prevent chronic activation of the EV-PV circuit.
-6. **Warm Color Palette**: Use variables from `:root` in `css/styles.css`. Never use red, bright blue, or clinical white.
+4. **Empathetic Language**: All copy should be supportive, never demanding.
+5. **Forced Recovery**: The 10-minute post-session lockout is mandatory.
+6. **Warm Color Palette**: Use CSS variables. Never use red, bright blue, or clinical white.
 
 ## Color Variables
 
-Defined in `css/styles.css` lines 7-14:
+Defined in `css/styles.css`:
 
 - `--color-cream`: #F5F1E8 (background)
 - `--color-soft-green`: #A8D5BA (positive actions)
 - `--color-gentle-gray`: #B8B8B8 (neutral options)
 - `--color-panic`: #F4A261 (panic button - warm orange, NOT red)
 
-## Customization Points
-
-### Micro-Task Templates
-
-Edit `MicroTaskTemplates` in `js/app.js` lines 27-56 to add new micro-task suggestions.
-
-### Recovery Time
-
-Default is 600 seconds (10 minutes). Change at `js/app.js` line 436:
-
-```javascript
-let recoverySeconds = 600; // Adjust this value
-```
-
-### Default User Name
-
-Change `AppState.userName` default value at `js/app.js` line 12.
-
 ## Deployment
 
-The app is a static site requiring no server-side processing:
+The app is deployed to GitHub Pages at https://amigoia.com:
 
-**Netlify/Vercel**:
-- Build command: (none)
-- Publish directory: `/` (root)
+```bash
+# Push to gh-pages branch to deploy
+git push origin gh-pages
+```
 
-**GitHub Pages**:
-- Deploy from root directory
-- No Jekyll processing needed
-
-**Important**: Update the Xano API URL in `js/api.js` before deploying, or the app will only work in offline mode.
+- Custom domain configured via CNAME file
+- HTTPS enforced via GitHub Pages settings
+- No build process required
 
 ## Future Development Guidelines
 
-When adding features:
-
 1. **Maintain Offline-First**: All new features must work without backend
 2. **Preserve Step Flow**: Don't add shortcuts that skip the step progression
-3. **No Complexity Increase**: Don't add abstractions, frameworks, or build tools without strong justification
+3. **No Complexity Increase**: Don't add frameworks or build tools without strong justification
 4. **Track Everything**: Log new user actions to `taskHistory` for analytics
-5. **Test Micro-Task Levels**: New features shouldn't disrupt the 0-3 difficulty progression
-6. **Consult Neuroscience**: Features should align with EV-PV activation/deactivation theory
-
-## Roadmap
-
-**v1.1** (next version):
-- User authentication
-- Statistics dashboard
-- Dark mode
-- PWA support
-
-See README.md for full roadmap.
+5. **Category-Aware**: When adding micro-task templates, add them to the appropriate category in `CategoryTemplates`
