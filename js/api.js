@@ -142,6 +142,33 @@ const API = {
     },
 
     // ========================================
+    // Métodos de Task History
+    // ========================================
+
+    /**
+     * Guardar evento de tarea en tabla task_history
+     * Endpoint: POST /create_task_event
+     */
+    async createTaskEvent(eventData) {
+        try {
+            const response = await fetch(`${this.baseURL}/create_task_event`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify(eventData),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error creating task event:', error);
+            throw error;
+        }
+    },
+
+    // ========================================
     // Integración con Gemini AI
     // ========================================
 

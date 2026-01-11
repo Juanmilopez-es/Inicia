@@ -149,16 +149,39 @@ async function saveSession() {
         original_task: AppState.originalTask,
         tasks_completed: AppState.tasksCompleted,
         session_duration_seconds: AppState.sessionElapsedSeconds,
-        task_history: JSON.stringify(AppState.taskHistory),
         completed_at: new Date().toISOString()
     };
 
     try {
+        // 1. Guardar sesión y obtener ID
         const savedSession = await API.saveSession(sessionData);
-        console.log('Session saved successfully:', savedSession);
+        const sessionId = savedSession?.id;
+        console.log('Session saved:', savedSession);
+
+        // 2. Guardar cada evento en task_history
+        if (sessionId && AppState.taskHistory.length > 0) {
+            for (const event of AppState.taskHistory) {
+                try {
+                    await API.createTaskEvent({
+                        session_id: sessionId,
+                        user_id: AppState.userName,
+                        event_type: event.type,
+                        content: event.content || '',
+                        level: event.level ?? null,
+                        created_at: event.timestamp
+                    });
+                } catch (e) {
+                    console.warn('Error saving event:', e);
+                }
+            }
+            console.log(`Saved ${AppState.taskHistory.length} events to task_history`);
+        }
     } catch (error) {
         console.error('Error saving session:', error);
-        API.saveOffline('sessions', sessionData);
+        API.saveOffline('sessions', {
+            ...sessionData,
+            task_history: AppState.taskHistory
+        });
     }
 }
 
