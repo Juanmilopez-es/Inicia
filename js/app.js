@@ -391,7 +391,14 @@ function initStep4b() {
 }
 
 function startTimer() {
+    // Detener cualquier timer previo antes de iniciar uno nuevo
+    stopTimer();
+
     const timerEl = document.getElementById('sessionTimer');
+    if (!timerEl) return;
+
+    // Actualizar inmediatamente
+    timerEl.textContent = formatTime(AppState.sessionElapsedSeconds);
 
     AppState.timerInterval = setInterval(() => {
         AppState.sessionElapsedSeconds++;
@@ -410,6 +417,9 @@ function stopTimer() {
 // Paso 5: Gestión del Bloqueo
 // ========================================
 function initStep5() {
+    // Detener el timer mientras está en modo pánico
+    stopTimer();
+
     const breathingBtn = document.getElementById('breathingBtn');
     const simplifyBtn = document.getElementById('simplifyBtn');
     const skipBtn = document.getElementById('skipBtn');
@@ -419,20 +429,20 @@ function initStep5() {
         timestamp: new Date().toISOString()
     });
 
-    // Ejercicio de respiración
+    // Ejercicio de respiración - calma al usuario
     breathingBtn.onclick = () => {
         showStep('5b');
         initBreathingExercise();
     };
 
-    // Simplificar tarea
-    simplifyBtn.onclick = async () => {
-        AppState.microTaskLevel = Math.max(AppState.microTaskLevel - 1, 0);
+    // Dame otro paso - mantiene el nivel pero da una tarea diferente
+    simplifyBtn.onclick = () => {
         AppState.currentMicroTask = getMicroTask(AppState.microTaskLevel, AppState.originalTask);
 
         AppState.taskHistory.push({
-            type: 'task_simplified',
+            type: 'task_changed',
             content: AppState.currentMicroTask,
+            level: AppState.microTaskLevel,
             timestamp: new Date().toISOString()
         });
 
@@ -440,13 +450,13 @@ function initStep5() {
         initStep4b();
     };
 
-    // Saltar a algo más fácil
-    skipBtn.onclick = async () => {
+    // Empezar más fácil - va al nivel 0 (más fácil)
+    skipBtn.onclick = () => {
         AppState.microTaskLevel = 0;
         AppState.currentMicroTask = getMicroTask(0, AppState.originalTask);
 
         AppState.taskHistory.push({
-            type: 'task_skipped',
+            type: 'task_reset_to_easy',
             content: AppState.currentMicroTask,
             timestamp: new Date().toISOString()
         });
