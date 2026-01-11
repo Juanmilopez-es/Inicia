@@ -181,32 +181,32 @@ const API = {
      */
     async generateMicroTask(originalTask, level, previousTasks = []) {
         const levelDescriptions = {
-            0: 'Una acción física mínima que no requiere pensar: levantarse, buscar algo, poner algo en su sitio, abrir una app/puerta/caja.',
-            1: 'Una acción de observación rápida: mirar, revisar superficialmente, hacer una lista corta, verificar algo.',
-            2: 'Una acción de engagement moderado: preparar algo, organizar, hacer una pequeña parte del trabajo.',
-            3: 'Trabajo activo real pero breve: hacer una parte concreta de la tarea durante 5 minutos máximo.'
+            0: 'Acción física mínima de 30 segundos: moverse, coger algo, abrir algo.',
+            1: 'Observación rápida de 1 minuto: mirar, revisar, localizar.',
+            2: 'Preparación ligera de 2 minutos: organizar, preparar herramientas.',
+            3: 'Acción real breve de 3-5 minutos: hacer una pequeña parte.'
         };
 
-        const prompt = `Eres un coach que ayuda a personas a empezar tareas difíciles dividiéndolas en pasos ridículamente pequeños.
+        const prompt = `INSTRUCCIÓN CRÍTICA: Genera un micro-paso para ayudar a alguien a empezar esta tarea.
 
-TAREA DEL USUARIO: "${originalTask}"
+TAREA: "${originalTask}"
 
-Tu trabajo es generar UN SOLO micro-paso que sea:
-- 100% RELEVANTE para "${originalTask}" (NO genérico, NO sobre libros si no es una tarea de estudio)
-- Nivel ${level}: ${levelDescriptions[level]}
-- Completable en 1-3 minutos
-- Tan simple que sea imposible decir que no
+PASO 1 - ANALIZA LA TAREA:
+- ¿Es sobre MOVER/TRANSPORTAR algo? → sugiere: buscar llaves, abrir maletero, acercar una caja
+- ¿Es sobre LIMPIAR/ORDENAR? → sugiere: coger un trapo, tirar una cosa, mover un objeto
+- ¿Es sobre EJERCICIO/DEPORTE? → sugiere: ponerse zapatillas, salir a la puerta, dar 10 pasos
+- ¿Es sobre TRABAJO/ORDENADOR? → sugiere: abrir el programa, escribir una palabra
+- ¿Es sobre COCINAR? → sugiere: sacar un ingrediente, encender el fuego
+- ¿Es sobre LLAMAR/CONTACTAR? → sugiere: buscar el número, abrir la app de teléfono
+- ¿Es sobre ESTUDIAR/LEER? → SOLO entonces sugiere algo con libros o apuntes
 
-${previousTasks.length > 0 ? `Pasos ya completados (no repetir): ${previousTasks.join(', ')}` : ''}
+REGLA ABSOLUTA: Si la tarea NO menciona libros, estudiar, leer o aprender, NUNCA sugieras nada relacionado con libros, páginas, capítulos o apuntes.
 
-EJEMPLOS según el tipo de tarea:
-- Si es mudanza/transporte: "Busca las llaves del vehículo", "Abre el maletero", "Pon una caja cerca de la puerta"
-- Si es limpieza: "Coge la escoba", "Limpia solo una esquina", "Tira una cosa a la basura"
-- Si es trabajo/email: "Abre el correo", "Lee solo el asunto del primer email", "Escribe una palabra"
-- Si es ejercicio: "Ponte las zapatillas", "Sal a la puerta", "Camina 10 pasos"
-- Si es estudio: "Abre el libro", "Lee solo el título del capítulo", "Subraya una frase"
+NIVEL DE DIFICULTAD ${level}: ${levelDescriptions[level]}
 
-RESPONDE SOLO CON EL MICRO-PASO (máximo 12 palabras, sin comillas, sin explicaciones):`;
+${previousTasks.length > 0 ? `NO REPETIR estos pasos ya hechos: ${previousTasks.join(', ')}` : ''}
+
+RESPONDE ÚNICAMENTE CON EL MICRO-PASO (máximo 10 palabras, imperativo, sin explicaciones):`;
 
         try {
             const response = await fetch(
@@ -217,8 +217,8 @@ RESPONDE SOLO CON EL MICRO-PASO (máximo 12 palabras, sin comillas, sin explicac
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
                         generationConfig: {
-                            maxOutputTokens: 60,
-                            temperature: 0.7
+                            maxOutputTokens: 50,
+                            temperature: 0.3
                         }
                     })
                 }
